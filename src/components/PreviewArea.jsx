@@ -1,10 +1,43 @@
 import React, { useState } from "react";
-import { generatePreview } from "../api/imageApi.js";
 
-const PreviewArea = ({ file, cropCoords }) => {
+const PreviewArea = ({ file, cropCoords, configId }) => {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // API call function (inline to match your pattern)
+  const generatePreview = async (imageData) => {
+    const { image, cropCoords, configId } = imageData;
+    
+    const formData = new FormData();
+    formData.append('cropCoords', JSON.stringify(cropCoords));
+    formData.append('image', image);
+    if (configId) {
+      formData.append('configId', configId);
+    }
+    
+    const response = await fetch('http://localhost:5000/api/image/preview', {
+      method: 'POST',
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMessage;
+      
+      try {
+        const errorJson = JSON.parse(errorText);
+        errorMessage = errorJson.error || errorJson.message || 'An error occurred';
+      } catch {
+        errorMessage = errorText || `HTTP ${response.status} - ${response.statusText}`;
+      }
+      
+      throw new Error(errorMessage);
+    }
+    
+    const blob = await response.blob();
+    return URL.createObjectURL(blob);
+  };
 
   const handlePreview = async () => {
     if (!file || !cropCoords) {
@@ -16,10 +49,11 @@ const PreviewArea = ({ file, cropCoords }) => {
     setError(null);
     
     try {
-      // Call your backend API
+      // Call your backend API with configId
       const imageUrl = await generatePreview({
         image: file,
-        cropCoords: cropCoords
+        cropCoords: cropCoords,
+        configId: configId
       });
       
       setPreviewUrl(imageUrl);
@@ -33,13 +67,12 @@ const PreviewArea = ({ file, cropCoords }) => {
 
   const clearPreview = () => {
     if (previewUrl) {
-      URL.revokeObjectURL(previewUrl); // Clean up memory
+      URL.revokeObjectURL(previewUrl);
     }
     setPreviewUrl(null);
     setError(null);
   };
 
-  // Check if we can generate preview
   const canGeneratePreview = file && cropCoords && !loading;
 
   return (
@@ -47,6 +80,7 @@ const PreviewArea = ({ file, cropCoords }) => {
       <h3>Preview (5% scale)</h3>
       <p style={{ color: "#666", fontSize: "0.9rem", marginBottom: "1rem" }}>
         Generate a small preview to see how your crop will look
+        {configId && " (with logo overlay)"}
       </p>
       
       <div style={{ marginBottom: "1rem" }}>
@@ -65,7 +99,7 @@ const PreviewArea = ({ file, cropCoords }) => {
             opacity: canGeneratePreview ? 1 : 0.6
           }}
         >
-          {loading ? "⏳ Generating..." : "🔍 Generate Preview"}
+          {loading ? "Generating..." : "Generate Preview"}
         </button>
         
         {previewUrl && (
@@ -81,10 +115,23 @@ const PreviewArea = ({ file, cropCoords }) => {
               fontSize: "1rem"
             }}
           >
-            🗑️ Clear
+            Clear
           </button>
         )}
       </div>
+
+      {/* Logo info */}
+      {configId && (
+        <div style={{ 
+          padding: "0.75rem", 
+          backgroundColor: "#e7f3ff", 
+          borderRadius: "4px",
+          marginBottom: "1rem",
+          fontSize: "0.9rem"
+        }}>
+          Logo configuration selected: {configId}
+        </div>
+      )}
 
       {/* Status messages */}
       {!file && (
@@ -95,7 +142,7 @@ const PreviewArea = ({ file, cropCoords }) => {
           color: "#6c757d",
           fontStyle: "italic"
         }}>
-          📁 Upload an image first to enable preview
+          Upload an image first to enable preview
         </div>
       )}
 
@@ -107,7 +154,7 @@ const PreviewArea = ({ file, cropCoords }) => {
           color: "#856404",
           border: "1px solid #ffeaa7"
         }}>
-          📏 Select a crop area to enable preview
+          Select a crop area to enable preview
         </div>
       )}
 
@@ -121,7 +168,7 @@ const PreviewArea = ({ file, cropCoords }) => {
           border: "1px solid #ffcccc",
           marginBottom: "1rem"
         }}>
-          ❌ {error}
+          {error}
         </div>
       )}
 
@@ -153,7 +200,8 @@ const PreviewArea = ({ file, cropCoords }) => {
             marginBottom: "1rem",
             margin: "0 0 1rem 0"
           }}>
-            ✅ Preview generated successfully (scaled to 5%)
+            Preview generated successfully (scaled to 5%)
+            {configId && " with logo overlay"}
           </p>
           
           <div style={{ textAlign: "center" }}>
@@ -179,24 +227,6 @@ const PreviewArea = ({ file, cropCoords }) => {
             This is a scaled-down preview. The final image will be full quality.
           </p>
         </div>
-      )}
-
-      {/* Debug info (remove in production) */}
-      {process.env.NODE_ENV === 'development' && (
-        <details style={{ marginTop: "1rem", fontSize: "0.8rem", color: "#666" }}>
-          <summary>Debug Info</summary>
-          <pre style={{ fontSize: "0.7rem", overflow: "auto" }}>
-            {JSON.stringify({
-              hasFile: !!file,
-              fileName: file?.name,
-              hasCropCoords: !!cropCoords,
-              cropCoords: cropCoords,
-              hasPreview: !!previewUrl,
-              loading,
-              error
-            }, null, 2)}
-          </pre>
-        </details>
       )}
     </section>
   );

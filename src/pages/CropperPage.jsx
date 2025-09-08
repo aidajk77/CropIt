@@ -38,10 +38,12 @@ const CropperPage = () => {
           <PreviewArea 
             file={imageData.file}
             cropCoords={imageData.cropCoords}
+            configId={selectedConfigId}
           />
           <GenerateButton 
             file={imageData.file}
             cropCoords={imageData.cropCoords}
+            configId={selectedConfigId}
           />
         </>
       )}
