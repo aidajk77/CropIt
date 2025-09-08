@@ -127,8 +127,30 @@ const getConfig = async (req, res, next) => {
   }
 };
 
+// Get all configurations
+const getAllConfigs = async (req, res, next) => {
+  try {
+    const { limit = 50, offset = 0 } = req.query;
+    
+    const configs = await Configuration.findAll(
+      parseInt(limit), 
+      parseInt(offset)
+    );
+    
+    res.json({
+      success: true,
+      count: configs.length,
+      data: configs.map(config => config.toJSON())
+    });
+  } catch (error) {
+    console.error('Config list error:', error);
+    next(error);
+  }
+};
+
 module.exports = {
   createConfig,
   updateConfig,
-  getConfig
+  getConfig,
+  getAllConfigs
 };

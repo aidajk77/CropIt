@@ -16,17 +16,14 @@ const processCropCoordinates = (coords) => {
   throw new Error('Invalid crop coordinates. Expected [x, y, width, height]');
 };
 
-// Helper function to apply logo overlay
 const applyLogoOverlay = async (imageBuffer, config) => {
   if (!config || !config.logoFilePath) {
     return imageBuffer;
   }
 
   try {
-    // Read logo file from disk
     const logoPath = path.join(__dirname, '..', config.logoFilePath);
     
-    // Check if logo file exists
     if (!fs.existsSync(logoPath)) {
       console.error('Logo file not found:', logoPath);
       return imageBuffer;
@@ -37,49 +34,76 @@ const applyLogoOverlay = async (imageBuffer, config) => {
     const image = sharp(imageBuffer);
     const { width, height } = await image.metadata();
     
-    // Scale logo if scaleDown parameter is provided
-    let logoImage = sharp(logoBuffer);
-    if (config.scaleDown && config.scaleDown < 1) {
-      const logoMeta = await logoImage.metadata();
-      logoImage = logoImage.resize(
-        Math.round(logoMeta.width * config.scaleDown),
-        Math.round(logoMeta.height * config.scaleDown)
-      );
-    }
-
-    // Position logo based on logoPosition
-    let left = 0;
-    let top = 0;
+    // DEBUG: Log image dimensions
+    console.log('TARGET IMAGE:', { width, height });
     
+    let logoImage = sharp(logoBuffer);
     const logoMeta = await logoImage.metadata();
+    
+    // DEBUG: Log original logo dimensions
+    console.log('ORIGINAL LOGO:', { width: logoMeta.width, height: logoMeta.height });
+    
+    // Calculate logo size
+    let logoWidth = logoMeta.width;
+    let logoHeight = logoMeta.height;
+    
+    if (config.scaleDown && config.scaleDown < 1) {
+      logoWidth = Math.round(logoMeta.width * config.scaleDown);
+      logoHeight = Math.round(logoMeta.height * config.scaleDown);
+    }
+    
+    // DEBUG: Log scaled logo size
+    console.log('SCALED LOGO:', { width: logoWidth, height: logoHeight });
+    
+    // FORCE logo to fit within image bounds (max 50% of image size)
+    const maxWidth = Math.floor(width * 0.5);
+    const maxHeight = Math.floor(height * 0.5);
+    
+    if (logoWidth > maxWidth || logoHeight > maxHeight) {
+      const scaleRatio = Math.min(maxWidth / logoWidth, maxHeight / logoHeight);
+      logoWidth = Math.max(1, Math.round(logoWidth * scaleRatio));
+      logoHeight = Math.max(1, Math.round(logoHeight * scaleRatio));
+      console.log('FORCE SCALED LOGO:', { width: logoWidth, height: logoHeight, scaleRatio });
+    }
+    
+    // Resize logo
+    logoImage = logoImage.resize(logoWidth, logoHeight);
+    
+    // Calculate position
+    let left = 10;
+    let top = 10;
     
     switch (config.logoPosition?.toLowerCase()) {
       case 'top-right':
-        left = width - logoMeta.width - 10;
+        left = Math.max(0, width - logoWidth - 10);
         top = 10;
         break;
       case 'bottom-left':
         left = 10;
-        top = height - logoMeta.height - 10;
+        top = Math.max(0, height - logoHeight - 10);
         break;
       case 'bottom-right':
-        left = width - logoMeta.width - 10;
-        top = height - logoMeta.height - 10;
+        left = Math.max(0, width - logoWidth - 10);
+        top = Math.max(0, height - logoHeight - 10);
         break;
       case 'center':
-        left = Math.round((width - logoMeta.width) / 2);
-        top = Math.round((height - logoMeta.height) / 2);
+        left = Math.max(0, Math.round((width - logoWidth) / 2));
+        top = Math.max(0, Math.round((height - logoHeight) / 2));
         break;
-      default: // top-left
-        left = 10;
-        top = 10;
     }
+    
+    // DEBUG: Log final position
+    console.log('LOGO POSITION:', { left, top });
+    console.log('BOUNDS CHECK:', { 
+      fitsWidth: left + logoWidth <= width, 
+      fitsHeight: top + logoHeight <= height 
+    });
 
     const result = await image
       .composite([{ 
         input: await logoImage.toBuffer(), 
-        left: Math.max(0, left), 
-        top: Math.max(0, top) 
+        left: left, 
+        top: top 
       }])
       .png()
       .toBuffer();
@@ -87,18 +111,19 @@ const applyLogoOverlay = async (imageBuffer, config) => {
     return result;
   } catch (error) {
     console.error('Error applying logo overlay:', error);
-    return imageBuffer; // Return original image if logo overlay fails
+    console.error('Error stack:', error.stack);
+    return imageBuffer;
   }
 };
 
-// Generate image preview (scaled down to 5%)
+// Generate image preview (scaled down to 5%) with optional logo overlay
 const generatePreview = async (req, res, next) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No image file provided' });
     }
 
-    const { cropCoords } = req.body;
+    const { cropCoords, configId } = req.body;
     if (!cropCoords) {
       return res.status(400).json({ error: 'Crop coordinates are required' });
     }
@@ -112,15 +137,33 @@ const generatePreview = async (req, res, next) => {
 
     const cropParams = processCropCoordinates(coords);
     
-    // Crop and scale down to 5% of original size
-    const processedImage = await sharp(req.file.buffer)
+    // First crop at full size
+    let processedImage = await sharp(req.file.buffer)
       .extract(cropParams)
+      .png()
+      .toBuffer();
+
+    // Apply logo overlay at full size if configId is provided
+    if (configId) {
+      try {
+        const config = await Configuration.findById(configId);
+        if (config) {
+          processedImage = await applyLogoOverlay(processedImage, config);
+        }
+      } catch (configError) {
+        console.error('Config lookup error in preview:', configError);
+        // Continue without logo overlay
+      }
+    }
+
+    // Then scale down to 5% for preview
+    const finalPreview = await sharp(processedImage)
       .resize(Math.round(cropParams.width * 0.05), Math.round(cropParams.height * 0.05))
       .png()
       .toBuffer();
 
     res.set('Content-Type', 'image/png');
-    res.send(processedImage);
+    res.send(finalPreview);
   } catch (error) {
     console.error('Preview error:', error);
     next(error);

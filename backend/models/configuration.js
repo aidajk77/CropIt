@@ -63,11 +63,15 @@ class Configuration {
   // Find all active configurations
   static async findAll(limit = 50, offset = 0) {
     const db = createConnection();
+
+    const limitInt = parseInt(limit) || 50;
+    const offsetInt = parseInt(offset) || 0;
+
     const query = `
       SELECT * FROM configurations 
       WHERE is_active = 1 
       ORDER BY created_at DESC 
-      LIMIT ? OFFSET ?
+      LIMIT ${limitInt} OFFSET ${offsetInt}
     `;
     
     try {

@@ -12,4 +12,7 @@ router.put('/:id', upload.single('logoImage'), configController.updateConfig);
 // GET /api/config/:id
 router.get('/:id', configController.getConfig);
 
+// GET /api/config - List all configurations
+router.get('/', configController.getAllConfigs);
+
 module.exports = router;
