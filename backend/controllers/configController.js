@@ -1,30 +1,7 @@
 const Configuration = require('../models/Configuration');
 const path = require('path');
-const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
-// Helper function to save logo file
-const saveLogoFile = (fileBuffer, originalName) => {
-  const uploadsDir = path.join(__dirname, '..', 'uploads', 'logos');
-  
-  // Ensure directory exists
-  if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
-  }
-
-  const fileExtension = path.extname(originalName);
-  const filename = `${uuidv4()}${fileExtension}`;
-  const filePath = path.join(uploadsDir, filename);
-  const relativePath = `uploads/logos/${filename}`;
-
-  fs.writeFileSync(filePath, fileBuffer);
-  
-  return {
-    filePath: relativePath,
-    filename,
-    fullPath: filePath
-  };
-};
 
 // create configuration function
 const createConfig = async (req, res, next) => {
@@ -75,10 +52,10 @@ const updateConfig = async (req, res, next) => {
     if (logoPosition !== undefined) updateData.logoPosition = logoPosition;
     if (description !== undefined) updateData.description = description;
     
-    // Handle logo image update
+    // Handle logo image update 
     if (req.file) {
-      const logoFile = saveLogoFile(req.file.buffer, req.file.originalname);
-      updateData.logoFilePath = logoFile.filePath;
+      updateData.logoData = req.file.buffer;        // Store binary data
+      updateData.logoMimeType = req.file.mimetype;  // Store MIME type
       updateData.logoFileName = req.file.originalname;
       updateData.logoFileSize = req.file.size;
     }
