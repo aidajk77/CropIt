@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { getAllConfigs } from "../api/configApi.js"; 
 
 const ConfigSelector = ({ onConfigSelect, selectedConfigId }) => {
   const [configs, setConfigs] = useState([]);
@@ -14,13 +15,9 @@ const ConfigSelector = ({ onConfigSelect, selectedConfigId }) => {
     setError(null);
     
     try {
-      const response = await fetch('http://localhost:5000/api/config');
-      if (response.ok) {
-        const result = await response.json();
-        setConfigs(result.data || []);
-      } else {
-        setError('Failed to load configurations');
-      }
+      const response = await getAllConfigs();
+      // Handle the response structure from your API
+      setConfigs(response.data || response || []);
     } catch (err) {
       setError('Error loading configurations: ' + err.message);
     } finally {

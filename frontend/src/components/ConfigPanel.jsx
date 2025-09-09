@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { createConfig } from "../api/configApi.js";
 
 const ConfigPanel = ({ onConfigCreated }) => {
   const [scaleDown, setScaleDown] = useState(0.1);
@@ -8,29 +9,6 @@ const ConfigPanel = ({ onConfigCreated }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-
-  // API call function
-  const createConfig = async (configData) => {
-    const formData = new FormData();
-    formData.append('scaleDown', configData.scaleDown);
-    formData.append('logoPosition', configData.logoPosition);
-    formData.append('description', configData.description || '');
-    if (configData.logoImage) {
-      formData.append('logoImage', configData.logoImage);
-    }
-    
-    const response = await fetch('http://localhost:5000/api/config', {
-      method: 'POST',
-      body: formData,
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(errorText || 'Failed to create configuration');
-    }
-    
-    return response.json();
-  };
 
   const handleCreateConfig = async () => {
     setLoading(true);

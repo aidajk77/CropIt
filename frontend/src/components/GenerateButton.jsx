@@ -1,60 +1,27 @@
 import React, { useState } from "react";
+import { generateCroppedImage, downloadImage, validateImageData } from "../api/imageApi.js"; // Adjust path as needed
 
 const GenerateButton = ({ file, cropCoords, configId = null }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
-  // API call function (inline to avoid import issues in artifact)
-  const generateCroppedImage = async (imageData) => {
-    const { image, cropCoords, configId } = imageData;
-    
-    const formData = new FormData();
-    formData.append('cropCoords', JSON.stringify(cropCoords));
-    formData.append('image', image);
-    if (configId) {
-      formData.append('configId', configId);
-    }
-    
-    const response = await fetch('http://localhost:5000/api/image/generate', {
-      method: 'POST',
-      body: formData,
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      let errorMessage;
-      
-      try {
-        const errorJson = JSON.parse(errorText);
-        errorMessage = errorJson.error || errorJson.message || 'An error occurred';
-      } catch {
-        errorMessage = errorText || `HTTP ${response.status} - ${response.statusText}`;
-      }
-      
-      throw new Error(errorMessage);
-    }
-    
-    const blob = await response.blob();
-    return URL.createObjectURL(blob);
-  };
-
-  // Download function
-  const downloadImage = (imageUrl, filename = 'cropped-image.png') => {
-    const link = document.createElement('a');
-    link.href = imageUrl;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    // Clean up the URL after download
-    setTimeout(() => URL.revokeObjectURL(imageUrl), 100);
-  };
-
   const handleGenerate = async () => {
     if (!file || !cropCoords) {
       setError("Please upload an image and select a crop area first");
+      return;
+    }
+
+    // Validate image data before processing
+    const imageData = {
+      image: file,
+      cropCoords: cropCoords,
+      configId: configId
+    };
+
+    const validationErrors = validateImageData(imageData);
+    if (validationErrors.length > 0) {
+      setError(`Validation failed: ${validationErrors.join(', ')}`);
       return;
     }
 
@@ -63,12 +30,8 @@ const GenerateButton = ({ file, cropCoords, configId = null }) => {
     setSuccess(false);
     
     try {
-      // Generate the cropped image
-      const imageUrl = await generateCroppedImage({
-        image: file,
-        cropCoords: cropCoords,
-        configId: configId
-      });
+      // Generate the cropped image using the API
+      const imageUrl = await generateCroppedImage(imageData);
       
       // Auto-download the image
       const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
@@ -238,6 +201,8 @@ const GenerateButton = ({ file, cropCoords, configId = null }) => {
             {JSON.stringify({
               hasFile: !!file,
               fileName: file?.name,
+              fileType: file?.type,
+              fileSize: file?.size,
               hasCropCoords: !!cropCoords,
               cropCoords: cropCoords,
               configId: configId,
