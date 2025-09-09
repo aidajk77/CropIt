@@ -6,13 +6,14 @@ class Configuration {
     this.id = data.id;
     this.scaleDown = data.scale_down;
     this.logoPosition = data.logo_position;
-    this.logoFilePath = data.logo_file_path;
     this.logoFileName = data.logo_file_name;
     this.logoFileSize = data.logo_file_size;
     this.isActive = data.is_active;
     this.createdAt = data.created_at;
     this.updatedAt = data.updated_at;
     this.description = data.description;
+    this.logoData = data.logo_data;
+    this.logoMimeType = data.logo_mime_type;
   }
 
   // Create new configuration
@@ -22,19 +23,20 @@ class Configuration {
     
     const query = `
       INSERT INTO configurations (
-        id, scale_down, logo_position, logo_file_path, 
-        logo_file_name, logo_file_size, description
-      ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        id, scale_down, logo_position,logo_file_name,
+        logo_file_size, description, logo_data, logo_mime_type 
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
     
     const params = [
       id,
       configData.scaleDown || null,
       configData.logoPosition || 'top-left',
-      configData.logoFilePath || null,
       configData.logoFileName || null,
       configData.logoFileSize || null,
-      configData.description || null
+      configData.description || null,
+      configData.logoData || null,
+      configData.logoMimeType || null
     ];
 
     try {

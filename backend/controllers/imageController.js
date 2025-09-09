@@ -17,33 +17,21 @@ const processCropCoordinates = (coords) => {
 };
 
 const applyLogoOverlay = async (imageBuffer, config) => {
-  if (!config || !config.logoFilePath) {
+  if (!config || !config.logoData) {
     return imageBuffer;
   }
 
   try {
-    const logoPath = path.join(__dirname, '..', config.logoFilePath);
-    
-    if (!fs.existsSync(logoPath)) {
-      console.error('Logo file not found:', logoPath);
-      return imageBuffer;
-    }
-    
-    const logoBuffer = fs.readFileSync(logoPath);
+    // Logo is already in memory from database
+    const logoBuffer = Buffer.from(config.logoData);
     
     const image = sharp(imageBuffer);
     const { width, height } = await image.metadata();
     
-    // DEBUG: Log image dimensions
-    console.log('TARGET IMAGE:', { width, height });
-    
     let logoImage = sharp(logoBuffer);
     const logoMeta = await logoImage.metadata();
     
-    // DEBUG: Log original logo dimensions
-    console.log('ORIGINAL LOGO:', { width: logoMeta.width, height: logoMeta.height });
-    
-    // Calculate logo size
+    // Calculate logo size with better scaling for small images
     let logoWidth = logoMeta.width;
     let logoHeight = logoMeta.height;
     
@@ -52,34 +40,27 @@ const applyLogoOverlay = async (imageBuffer, config) => {
       logoHeight = Math.round(logoMeta.height * config.scaleDown);
     }
     
-    // DEBUG: Log scaled logo size
-    console.log('SCALED LOGO:', { width: logoWidth, height: logoHeight });
-    
-    // FORCE logo to fit within image bounds (max 50% of image size)
-    const maxWidth = Math.floor(width * 0.5);
-    const maxHeight = Math.floor(height * 0.5);
+    // Force logo to maximum 30% of image size
+    const maxWidth = Math.floor(width * 0.3);
+    const maxHeight = Math.floor(height * 0.3);
     
     if (logoWidth > maxWidth || logoHeight > maxHeight) {
       const scaleRatio = Math.min(maxWidth / logoWidth, maxHeight / logoHeight);
       logoWidth = Math.max(1, Math.round(logoWidth * scaleRatio));
       logoHeight = Math.max(1, Math.round(logoHeight * scaleRatio));
-      console.log('FORCE SCALED LOGO:', { width: logoWidth, height: logoHeight, scaleRatio });
     }
     
-    // Resize logo
     logoImage = logoImage.resize(logoWidth, logoHeight);
     
-    // Calculate position
+    // Position calculation remains the same
     let left = 10;
     let top = 10;
     
     switch (config.logoPosition?.toLowerCase()) {
       case 'top-right':
         left = Math.max(0, width - logoWidth - 10);
-        top = 10;
         break;
       case 'bottom-left':
-        left = 10;
         top = Math.max(0, height - logoHeight - 10);
         break;
       case 'bottom-right':
@@ -91,13 +72,6 @@ const applyLogoOverlay = async (imageBuffer, config) => {
         top = Math.max(0, Math.round((height - logoHeight) / 2));
         break;
     }
-    
-    // DEBUG: Log final position
-    console.log('LOGO POSITION:', { left, top });
-    console.log('BOUNDS CHECK:', { 
-      fitsWidth: left + logoWidth <= width, 
-      fitsHeight: top + logoHeight <= height 
-    });
 
     const result = await image
       .composite([{ 
@@ -111,7 +85,6 @@ const applyLogoOverlay = async (imageBuffer, config) => {
     return result;
   } catch (error) {
     console.error('Error applying logo overlay:', error);
-    console.error('Error stack:', error.stack);
     return imageBuffer;
   }
 };

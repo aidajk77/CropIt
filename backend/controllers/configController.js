@@ -26,29 +26,23 @@ const saveLogoFile = (fileBuffer, originalName) => {
   };
 };
 
-// Create new configuration
+// create configuration function
 const createConfig = async (req, res, next) => {
   try {
     const { scaleDown, logoPosition, description } = req.body;
     
-    // Validate scaleDown parameter
     if (scaleDown && (isNaN(scaleDown) || parseFloat(scaleDown) > 0.25)) {
       return res.status(400).json({ error: 'scaleDown must be a number <= 0.25' });
     }
 
     const configData = {
       scaleDown: scaleDown ? parseFloat(scaleDown) : null,
-      logoPosition: logoPosition || 'top-left',
-      description
+      logoPosition: logoPosition || 'bottom-right',
+      description,
+      logoData: req.file ? req.file.buffer : null,  // Store binary data
+      logoMimeType: req.file ? req.file.mimetype : null,
+      logoFileSize: req.file ? req.file.size : null
     };
-
-    // Handle logo image file upload
-    if (req.file) {
-      const logoFile = saveLogoFile(req.file.buffer, req.file.originalname);
-      configData.logoFilePath = logoFile.filePath;
-      configData.logoFileName = req.file.originalname;
-      configData.logoFileSize = req.file.size;
-    }
 
     const config = await Configuration.create(configData);
     
