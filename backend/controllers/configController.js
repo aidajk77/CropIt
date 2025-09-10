@@ -54,8 +54,8 @@ const updateConfig = async (req, res, next) => {
     
     // Handle logo image update 
     if (req.file) {
-      updateData.logoData = req.file.buffer;        // Store binary data
-      updateData.logoMimeType = req.file.mimetype;  // Store MIME type
+      updateData.logoData = req.file.buffer;        
+      updateData.logoMimeType = req.file.mimetype;  
       updateData.logoFileName = req.file.originalname;
       updateData.logoFileSize = req.file.size;
     }

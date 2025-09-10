@@ -20,7 +20,6 @@ const applyLogoOverlay = async (imageBuffer, config) => {
   }
 
   try {
-    // Logo is already in memory from database
     const logoBuffer = Buffer.from(config.logoData);
     
     const image = sharp(imageBuffer);
@@ -177,7 +176,6 @@ const generateCroppedImage = async (req, res, next) => {
         }
       } catch (configError) {
         console.error('Config lookup error:', configError);
-        // Continue without logo overlay
       }
     }
 

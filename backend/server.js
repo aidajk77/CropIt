@@ -7,8 +7,6 @@ process.on('uncaughtException', err => {
     process.exit(1);
 });
 
-// Setting up config file (should be before importing app, but app already loads it)
-// dotenv is already configured in app.js
 
 const PORT = process.env.PORT || 5000;
 
