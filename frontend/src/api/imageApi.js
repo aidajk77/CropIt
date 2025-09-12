@@ -1,7 +1,7 @@
 import { apiPostFormData, createFormData } from './apiClient.js';
 
 // Generate image preview (scaled down to 5%)
-export const generatePreview = async (imageData) => {
+export const generatePreview = async (imageData, token = null) => {
   const { image, cropCoords } = imageData;
   
   const formData = createFormData(
@@ -13,14 +13,14 @@ export const generatePreview = async (imageData) => {
     }
   );
   
-  const blob = await apiPostFormData('/image/preview', formData);
+  const blob = await apiPostFormData('/image/preview', formData, token);
   
   // Convert blob to URL for display
   return URL.createObjectURL(blob);
 };
 
 // Generate full-quality cropped image with optional logo overlay
-export const generateCroppedImage = async (imageData) => {
+export const generateCroppedImage = async (imageData, token = null) => {
   const { image, cropCoords, configId } = imageData;
   
   const formData = createFormData(
@@ -33,7 +33,7 @@ export const generateCroppedImage = async (imageData) => {
     }
   );
   
-  const blob = await apiPostFormData('/image/generate', formData);
+  const blob = await apiPostFormData('/image/generate', formData, token);
   
   // Convert blob to URL for download
   return URL.createObjectURL(blob);

@@ -90,19 +90,30 @@ const applyLogoOverlay = async (imageBuffer, config) => {
 const generatePreview = async (req, res, next) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: 'No image file provided' });
+      return res.status(400).json({ 
+        success: false, 
+        error: 'No image file provided' 
+      });
     }
 
     const { cropCoords, configId } = req.body;
+    const userId = req.userId; // From auth middleware
+
     if (!cropCoords) {
-      return res.status(400).json({ error: 'Crop coordinates are required' });
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Crop coordinates are required' 
+      });
     }
 
     let coords;
     try {
       coords = typeof cropCoords === 'string' ? JSON.parse(cropCoords) : cropCoords;
     } catch (e) {
-      return res.status(400).json({ error: 'Invalid crop coordinates format' });
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Invalid crop coordinates format' 
+      });
     }
 
     const cropParams = processCropCoordinates(coords);
@@ -116,13 +127,22 @@ const generatePreview = async (req, res, next) => {
     // Apply logo overlay at full size if configId is provided
     if (configId) {
       try {
-        const config = await Configuration.findById(configId);
-        if (config) {
-          processedImage = await applyLogoOverlay(processedImage, config);
+        // Use user-specific config lookup to ensure security
+        const config = await Configuration.findByIdAndUser(configId, userId);
+        if (!config) {
+          return res.status(404).json({
+            success: false,
+            error: 'Configuration not found or access denied'
+          });
         }
+        
+        processedImage = await applyLogoOverlay(processedImage, config);
       } catch (configError) {
         console.error('Config lookup error in preview:', configError);
-        // Continue without logo overlay
+        return res.status(500).json({
+          success: false,
+          error: 'Failed to apply configuration'
+        });
       }
     }
 
@@ -144,19 +164,30 @@ const generatePreview = async (req, res, next) => {
 const generateCroppedImage = async (req, res, next) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: 'No image file provided' });
+      return res.status(400).json({ 
+        success: false, 
+        error: 'No image file provided' 
+      });
     }
 
     const { cropCoords, configId } = req.body;
+    const userId = req.userId; // From auth middleware
+
     if (!cropCoords) {
-      return res.status(400).json({ error: 'Crop coordinates are required' });
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Crop coordinates are required' 
+      });
     }
 
     let coords;
     try {
       coords = typeof cropCoords === 'string' ? JSON.parse(cropCoords) : cropCoords;
     } catch (e) {
-      return res.status(400).json({ error: 'Invalid crop coordinates format' });
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Invalid crop coordinates format' 
+      });
     }
 
     const cropParams = processCropCoordinates(coords);
@@ -170,12 +201,22 @@ const generateCroppedImage = async (req, res, next) => {
     // Apply logo overlay if configId is provided
     if (configId) {
       try {
-        const config = await Configuration.findById(configId);
-        if (config) {
-          processedImage = await applyLogoOverlay(processedImage, config);
+        // Use user-specific config lookup to ensure security
+        const config = await Configuration.findByIdAndUser(configId, userId);
+        if (!config) {
+          return res.status(404).json({
+            success: false,
+            error: 'Configuration not found or access denied'
+          });
         }
+        
+        processedImage = await applyLogoOverlay(processedImage, config);
       } catch (configError) {
         console.error('Config lookup error:', configError);
+        return res.status(500).json({
+          success: false,
+          error: 'Failed to apply configuration'
+        });
       }
     }
 

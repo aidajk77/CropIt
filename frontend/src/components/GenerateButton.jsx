@@ -1,56 +1,13 @@
 import React, { useState } from "react";
+import { useAuth } from "@clerk/clerk-react";
+import { generateCroppedImage, downloadImage, validateImageData } from "../api/imageApi";
+import "../styles/GenerateButton.css";
 
 const GenerateButton = ({ file, cropCoords, configId = null }) => {
+  const { getToken, isLoaded } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
-
-  // API call function (inline to avoid import issues in artifact)
-  const generateCroppedImage = async (imageData) => {
-    const { image, cropCoords, configId } = imageData;
-    
-    const formData = new FormData();
-    formData.append('cropCoords', JSON.stringify(cropCoords));
-    formData.append('image', image);
-    if (configId) {
-      formData.append('configId', configId);
-    }
-    
-    const response = await fetch('http://localhost:5000/api/image/generate', {
-      method: 'POST',
-      body: formData,
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      let errorMessage;
-      
-      try {
-        const errorJson = JSON.parse(errorText);
-        errorMessage = errorJson.error || errorJson.message || 'An error occurred';
-      } catch {
-        errorMessage = errorText || `HTTP ${response.status} - ${response.statusText}`;
-      }
-      
-      throw new Error(errorMessage);
-    }
-    
-    const blob = await response.blob();
-    return URL.createObjectURL(blob);
-  };
-
-  // Download function
-  const downloadImage = (imageUrl, filename = 'cropped-image.png') => {
-    const link = document.createElement('a');
-    link.href = imageUrl;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    // Clean up the URL after download
-    setTimeout(() => URL.revokeObjectURL(imageUrl), 100);
-  };
 
   const handleGenerate = async () => {
     if (!file || !cropCoords) {
@@ -63,14 +20,21 @@ const GenerateButton = ({ file, cropCoords, configId = null }) => {
     setSuccess(false);
     
     try {
-      // Generate the cropped image
-      const imageUrl = await generateCroppedImage({
+      // Prepare image data
+      const imageData = {
         image: file,
         cropCoords: cropCoords,
         configId: configId
-      });
+      };
+
+      const validationErrors = validateImageData(imageData);
+      if (validationErrors.length > 0) {
+        throw new Error(validationErrors.join(', '));
+      }
+
+      const token = await getToken();
+      const imageUrl = await generateCroppedImage(imageData, token);
       
-      // Auto-download the image
       const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
       const filename = `cropped-image-${timestamp}.png`;
       downloadImage(imageUrl, filename);
@@ -88,35 +52,36 @@ const GenerateButton = ({ file, cropCoords, configId = null }) => {
     }
   };
 
-  // Check if we can generate image
-  const canGenerate = file && cropCoords && !loading;
+  // Check if we can generate image (also need authentication to be loaded)
+  const canGenerate = file && cropCoords && !loading && isLoaded;
+
+  // Show loading state while Clerk is initializing
+  if (!isLoaded) {
+    return (
+      <section className="generate-section">
+        <h3 className="generate-title">Generate Final Image</h3>
+        <div style={{ textAlign: 'center', padding: '1rem' }}>
+          Loading authentication...
+        </div>
+      </section>
+    );
+  }
 
   return (
-    <section style={{ marginBottom: "2rem" }}>
-      <h3>Generate Final Image</h3>
-      <p style={{ color: "#666", fontSize: "0.9rem", marginBottom: "1rem" }}>
+    <section className="generate-section">
+      <h3 className="generate-title">Generate Final Image</h3>
+      <p className="generate-description">
         {configId 
           ? "Generate full-quality cropped image with logo overlay"
           : "Generate full-quality cropped image (no logo applied)"
         }
       </p>
       
-      <div style={{ marginBottom: "1rem" }}>
+      <div className="generate-button-wrapper">
         <button 
+          className={`generate-button ${canGenerate ? 'enabled' : 'disabled'}`}
           onClick={handleGenerate}
           disabled={!canGenerate}
-          style={{
-            backgroundColor: canGenerate ? "#007bff" : "#6c757d",
-            color: "white",
-            border: "none",
-            padding: "12px 24px",
-            borderRadius: "4px",
-            cursor: canGenerate ? "pointer" : "not-allowed",
-            fontSize: "1.1rem",
-            fontWeight: "bold",
-            opacity: canGenerate ? 1 : 0.6,
-            minWidth: "200px"
-          }}
         >
           {loading ? "🔄 Generating..." : "📥 Generate & Download"}
         </button>
@@ -124,71 +89,39 @@ const GenerateButton = ({ file, cropCoords, configId = null }) => {
 
       {/* Status messages */}
       {!file && (
-        <div style={{ 
-          padding: "1rem", 
-          backgroundColor: "#e9ecef", 
-          borderRadius: "4px",
-          color: "#6c757d",
-          fontStyle: "italic"
-        }}>
+        <div className="generate-status-no-file">
           📁 Upload an image first to enable generation
         </div>
       )}
 
       {file && !cropCoords && (
-        <div style={{ 
-          padding: "1rem", 
-          backgroundColor: "#fff3cd", 
-          borderRadius: "4px",
-          color: "#856404",
-          border: "1px solid #ffeaa7"
-        }}>
+        <div className="generate-status-no-crop">
           📏 Select a crop area to enable generation
         </div>
       )}
 
       {/* Error display */}
       {error && (
-        <div style={{ 
-          color: "red", 
-          padding: "1rem", 
-          backgroundColor: "#ffe6e6", 
-          borderRadius: "4px",
-          border: "1px solid #ffcccc",
-          marginBottom: "1rem"
-        }}>
+        <div className="generate-error">
           ❌ {error}
         </div>
       )}
 
       {/* Success message */}
       {success && (
-        <div style={{ 
-          color: "#28a745", 
-          padding: "1rem", 
-          backgroundColor: "#d4edda", 
-          borderRadius: "4px",
-          border: "1px solid #c3e6cb",
-          marginBottom: "1rem"
-        }}>
+        <div className="generate-success">
           ✅ Image generated and downloaded successfully!
         </div>
       )}
 
       {/* Loading indicator */}
       {loading && (
-        <div style={{ 
-          padding: "2rem", 
-          textAlign: "center",
-          backgroundColor: "#f8f9fa",
-          borderRadius: "4px",
-          border: "1px solid #dee2e6"
-        }}>
-          <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>🔄</div>
-          <p style={{ margin: 0, color: "#6c757d" }}>
+        <div className="generate-loading">
+          <div className="generate-loading-icon">🔄</div>
+          <p className="generate-loading-text">
             Generating your cropped image...
             <br />
-            <small style={{ fontSize: "0.8rem" }}>
+            <small className="generate-loading-subtext">
               {configId ? "Applying logo overlay and processing..." : "Processing image..."}
             </small>
           </p>
@@ -197,57 +130,13 @@ const GenerateButton = ({ file, cropCoords, configId = null }) => {
 
       {/* Configuration info */}
       {configId && (
-        <div style={{ 
-          padding: "0.75rem", 
-          backgroundColor: "#e7f3ff", 
-          borderRadius: "4px",
-          border: "1px solid #b8daff",
-          fontSize: "0.9rem"
-        }}>
+        <div className="generate-config-info">
           🎨 <strong>Logo config applied:</strong> ID {configId}
           <br />
-          <small style={{ color: "#6c757d" }}>
+          <small className="generate-config-subtext">
             The generated image will include your configured logo overlay
           </small>
         </div>
-      )}
-
-      {/* Info box */}
-      <div style={{ 
-        padding: "1rem", 
-        backgroundColor: "#f8f9fa", 
-        borderRadius: "4px",
-        fontSize: "0.9rem",
-        color: "#6c757d",
-        marginTop: "1rem"
-      }}>
-        <strong>💡 Note:</strong> The generated image will be:
-        <ul style={{ marginTop: "0.5rem", marginBottom: 0, paddingLeft: "1.5rem" }}>
-          <li>Full quality (no scaling applied)</li>
-          <li>Cropped to your selected area</li>
-          {configId && <li>Enhanced with your logo overlay</li>}
-          <li>Automatically downloaded as PNG file</li>
-        </ul>
-      </div>
-
-      {/* Debug info (development only) */}
-      {process.env.NODE_ENV === 'development' && (
-        <details style={{ marginTop: "1rem", fontSize: "0.8rem", color: "#666" }}>
-          <summary>Debug Info</summary>
-          <pre style={{ fontSize: "0.7rem", overflow: "auto" }}>
-            {JSON.stringify({
-              hasFile: !!file,
-              fileName: file?.name,
-              hasCropCoords: !!cropCoords,
-              cropCoords: cropCoords,
-              configId: configId,
-              canGenerate,
-              loading,
-              error,
-              success
-            }, null, 2)}
-          </pre>
-        </details>
       )}
     </section>
   );

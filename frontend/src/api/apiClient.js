@@ -31,13 +31,23 @@ const handleResponse = async (response) => {
   return response.text();
 };
 
+// Helper function to get auth headers
+const getAuthHeaders = (token) => {
+  const headers = {};
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
+};
+
 // GET request
-export const apiGet = async (endpoint) => {
+export const apiGet = async (endpoint, token = null) => {
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
+        ...getAuthHeaders(token),
       },
     });
     
@@ -49,13 +59,14 @@ export const apiGet = async (endpoint) => {
 };
 
 // POST request with JSON data
-export const apiPost = async (endpoint, data) => {
+export const apiPost = async (endpoint, data, token = null) => {
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
+        ...getAuthHeaders(token),
       },
       body: JSON.stringify(data),
     });
@@ -68,11 +79,14 @@ export const apiPost = async (endpoint, data) => {
 };
 
 // POST request with FormData (for file uploads)
-export const apiPostFormData = async (endpoint, formData) => {
+export const apiPostFormData = async (endpoint, formData, token = null) => {
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'POST',
-      // Don't set Content-Type header - let browser set it with boundary for FormData
+      headers: {
+        // Don't set Content-Type header - let browser set it with boundary for FormData
+        ...getAuthHeaders(token),
+      },
       body: formData,
     });
     
@@ -84,13 +98,14 @@ export const apiPostFormData = async (endpoint, formData) => {
 };
 
 // PUT request with JSON data
-export const apiPut = async (endpoint, data) => {
+export const apiPut = async (endpoint, data, token = null) => {
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
+        ...getAuthHeaders(token),
       },
       body: JSON.stringify(data),
     });
@@ -103,10 +118,13 @@ export const apiPut = async (endpoint, data) => {
 };
 
 // PUT request with FormData
-export const apiPutFormData = async (endpoint, formData) => {
+export const apiPutFormData = async (endpoint, formData, token = null) => {
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'PUT',
+      headers: {
+        ...getAuthHeaders(token),
+      },
       body: formData,
     });
     
@@ -118,12 +136,13 @@ export const apiPutFormData = async (endpoint, formData) => {
 };
 
 // DELETE request
-export const apiDelete = async (endpoint) => {
+export const apiDelete = async (endpoint, token = null) => {
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'DELETE',
       headers: {
         'Accept': 'application/json',
+        ...getAuthHeaders(token),
       },
     });
     

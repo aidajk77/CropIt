@@ -1,7 +1,7 @@
-import { apiGet, apiPostFormData, apiPutFormData, createFormData } from './apiClient.js';
+import { apiGet, apiPostFormData, apiPutFormData, apiDelete, createFormData } from './apiClient.js';
 
 // Create new configuration
-export const createConfig = async (configData) => {
+export const createConfig = async (configData, token = null) => {
   const { scaleDown, logoPosition, description, logoImage } = configData;
   
   const formData = createFormData(
@@ -15,16 +15,16 @@ export const createConfig = async (configData) => {
     }
   );
   
-  return apiPostFormData('/config', formData);
+  return apiPostFormData('/config', formData, token);
 };
 
 // Get configuration by ID
-export const getConfig = async (configId) => {
-  return apiGet(`/config/${configId}`);
+export const getConfig = async (configId, token = null) => {
+  return apiGet(`/config/${configId}`, token);
 };
 
 // Update existing configuration
-export const updateConfig = async (configId, configData) => {
+export const updateConfig = async (configId, configData, token = null) => {
   const { scaleDown, logoPosition, description, logoImage } = configData;
   
   const formData = createFormData(
@@ -38,17 +38,17 @@ export const updateConfig = async (configId, configData) => {
     }
   );
   
-  return apiPutFormData(`/config/${configId}`, formData);
+  return apiPutFormData(`/config/${configId}`, formData, token);
 };
 
-// Get all configurations (if you add this endpoint later)
-export const getAllConfigs = async () => {
-  return apiGet('/config');
+// Get all configurations
+export const getAllConfigs = async (token = null) => {
+  return apiGet('/config', token);
 };
 
-// Delete configuration (if you add this endpoint later)
-export const deleteConfig = async (configId) => {
-  return apiDelete(`/config/${configId}`);
+// Delete configuration
+export const deleteConfig = async (configId, token = null) => {
+  return apiDelete(`/config/${configId}`, token);
 };
 
 // Validate configuration data before sending

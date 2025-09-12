@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import "../styles/ImageEditor.css";
 
 const ImageEditor = ({ onImageAndCropReady }) => {
   // Image upload state
@@ -185,64 +186,40 @@ const ImageEditor = ({ onImageAndCropReady }) => {
     setIsSelecting(false);
   };
 
-  // Styling helpers
+  // Dynamic styles for crop overlays
   const getCropOverlayStyle = () => {
     if (!cropArea) return { display: 'none' };
     
     return {
-      position: 'absolute',
       left: `${cropArea.x}px`,
       top: `${cropArea.y}px`,
       width: `${cropArea.width}px`,
       height: `${cropArea.height}px`,
-      border: '2px solid #007bff',
-      backgroundColor: 'rgba(0, 123, 255, 0.1)',
-      pointerEvents: 'none',
-      zIndex: 10
     };
   };
 
-  const getImageOverlayStyle = () => {
-    if (!cropArea) return { display: 'none' };
-    
-    return {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      pointerEvents: 'none',
-      zIndex: 5
-    };
+  const getImageOverlayDisplay = () => {
+    return cropArea ? {} : { display: 'none' };
   };
 
   return (
-    <section style={{ marginBottom: "2rem" }}>
-      <h3>Upload & Crop Image</h3>
+    <section className="editor-section">
+      <h3 className="editor-title">Upload & Crop Image</h3>
       
       {!file ? (
         // Upload area
         <div>
           <div
-            style={{
-              border: "2px dashed #ccc",
-              borderRadius: "8px",
-              padding: "3rem 2rem",
-              textAlign: "center",
-              cursor: "pointer",
-              backgroundColor: "#f9f9f9",
-              transition: "border-color 0.3s ease"
-            }}
+            className="editor-upload-area"
             onDragOver={handleDragOver}
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
           >
-            <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>📁</div>
-            <p style={{ fontSize: "1.1rem", marginBottom: "0.5rem" }}>
+            <div className="editor-upload-icon">📁</div>
+            <p className="editor-upload-text">
               Drag & drop your PNG image here
             </p>
-            <p style={{ color: "#666", fontSize: "0.9rem" }}>
+            <p className="editor-upload-subtext">
               or click to browse (PNG files only, max 50MB)
             </p>
           </div>
@@ -252,77 +229,48 @@ const ImageEditor = ({ onImageAndCropReady }) => {
             type="file" 
             accept="image/png" 
             onChange={handleFileChange}
-            style={{ display: "none" }}
+            className="editor-file-input"
           />
         </div>
       ) : (
         // Image with crop functionality
         <div>
-          <div style={{ marginBottom: "1rem", display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
-            <div style={{ flex: 1 }}>
-              <p style={{ color: "green", fontWeight: "bold", margin: 0 }}>
+          <div className="editor-image-controls">
+            <div className="editor-image-info">
+              <p className="editor-file-name">
                 ✅ {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
               </p>
               {cropArea && (
-                <p style={{ color: "#666", fontSize: "0.9rem", margin: "0.25rem 0 0 0" }}>
+                <p className="editor-crop-dimensions">
                   📏 Selected: {Math.round(cropArea.width)} × {Math.round(cropArea.height)} px
                 </p>
               )}
             </div>
-            <div style={{ display: "flex", gap: "0.5rem" }}>
+            <div className="editor-button-group">
               <button
                 onClick={() => fileInputRef.current?.click()}
-                style={{
-                  backgroundColor: "#007bff",
-                  color: "white",
-                  border: "none",
-                  padding: "6px 12px",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  fontSize: "0.9rem"
-                }}
+                className="editor-button primary"
               >
                 Change Image
               </button>
               {cropArea && (
                 <button
                   onClick={clearCrop}
-                  style={{
-                    backgroundColor: "#ffc107",
-                    color: "black",
-                    border: "none",
-                    padding: "6px 12px",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                    fontSize: "0.9rem"
-                  }}
+                  className="editor-button warning"
                 >
                   Clear Crop
                 </button>
               )}
               <button
                 onClick={clearImage}
-                style={{
-                  backgroundColor: "#dc3545",
-                  color: "white",
-                  border: "none",
-                  padding: "6px 12px",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  fontSize: "0.9rem"
-                }}
+                className="editor-button danger"
               >
                 Remove Image
               </button>
             </div>
           </div>
 
-          <p style={{ 
-            color: cropArea ? "#28a745" : "#666", 
-            fontSize: "0.9rem", 
-            marginBottom: "1rem",
-            fontStyle: cropArea ? "normal" : "italic"
-          }}>
+          <p className={`editor-crop-status ${cropArea ? 'ready' : 'waiting'}`}>
             {cropArea ? 
               "✅ Crop area selected! You can now generate preview or final image." : 
               "📏 Click and drag on the image to select the crop area"
@@ -331,15 +279,7 @@ const ImageEditor = ({ onImageAndCropReady }) => {
           
           <div
             ref={containerRef}
-            style={{
-              position: 'relative',
-              display: 'inline-block',
-              cursor: isSelecting ? 'crosshair' : 'crosshair',
-              border: '2px solid #ddd',
-              borderRadius: '8px',
-              overflow: 'hidden',
-              maxWidth: '100%'
-            }}
+            className={`editor-image-container ${isSelecting ? 'selecting' : 'ready'}`}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
@@ -349,22 +289,22 @@ const ImageEditor = ({ onImageAndCropReady }) => {
               ref={imageRef}
               src={previewUrl}
               alt="Upload preview"
-              style={{
-                maxWidth: "100%",
-                maxHeight: "600px",
-                display: "block",
-                userSelect: 'none',
-                pointerEvents: 'none'
-              }}
+              className="editor-image"
               onLoad={handleImageLoad}
               draggable={false}
             />
             
             {/* Dark overlay outside crop area */}
-            <div style={getImageOverlayStyle()} />
+            <div 
+              className="editor-image-overlay" 
+              style={getImageOverlayDisplay()} 
+            />
             
             {/* Crop selection box */}
-            <div style={getCropOverlayStyle()} />
+            <div 
+              className="editor-crop-overlay" 
+              style={getCropOverlayStyle()} 
+            />
           </div>
           
           <input 
@@ -372,20 +312,13 @@ const ImageEditor = ({ onImageAndCropReady }) => {
             type="file" 
             accept="image/png" 
             onChange={handleFileChange}
-            style={{ display: "none" }}
+            className="editor-file-input"
           />
         </div>
       )}
       
       {error && (
-        <div style={{ 
-          color: "red", 
-          marginTop: "1rem", 
-          padding: "12px", 
-          backgroundColor: "#ffe6e6", 
-          borderRadius: "4px",
-          border: "1px solid #ffcccc"
-        }}>
+        <div className="editor-error">
           ❌ {error}
         </div>
       )}

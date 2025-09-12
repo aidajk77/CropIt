@@ -2,23 +2,23 @@ const Configuration = require('../models/Configuration');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
-
 // create configuration function
 const createConfig = async (req, res, next) => {
   try {
     const { scaleDown, logoPosition, description } = req.body;
+    const userId = req.userId; // From Clerk middleware
     
     if (scaleDown && (isNaN(scaleDown) || parseFloat(scaleDown) > 0.25)) {
       return res.status(400).json({ error: 'scaleDown must be a number <= 0.25' });
     }
 
     const configData = {
+      userId: userId, // Add user ID to config data
       scaleDown: scaleDown ? parseFloat(scaleDown) : null,
       logoPosition: logoPosition || 'bottom-right',
       description,
-      logoData: req.file ? req.file.buffer : null,  // Store binary data
+      logoData: req.file ? req.file.buffer : null,
       logoMimeType: req.file ? req.file.mimetype : null,
-      logoFileSize: req.file ? req.file.size : null
     };
 
     const config = await Configuration.create(configData);
@@ -39,10 +39,20 @@ const updateConfig = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { scaleDown, logoPosition, description } = req.body;
+    const userId = req.userId; // From Clerk middleware
     
     // Validate scaleDown parameter
     if (scaleDown && (isNaN(scaleDown) || parseFloat(scaleDown) > 0.25)) {
       return res.status(400).json({ error: 'scaleDown must be a number <= 0.25' });
+    }
+
+    // First check if config exists and belongs to user
+    const existingConfig = await Configuration.findByIdAndUser(id, userId);
+    if (!existingConfig) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Configuration not found or access denied' 
+      });
     }
 
     const updateData = {};
@@ -60,11 +70,7 @@ const updateConfig = async (req, res, next) => {
       updateData.logoFileSize = req.file.size;
     }
 
-    const config = await Configuration.update(id, updateData);
-    
-    if (!config) {
-      return res.status(404).json({ error: 'Configuration not found' });
-    }
+    const config = await Configuration.updateByUser(id, userId, updateData);
     
     res.json({
       success: true,
@@ -77,15 +83,19 @@ const updateConfig = async (req, res, next) => {
   }
 };
 
-// Get configuration by ID
+// Get configuration by ID (user-owned only)
 const getConfig = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const userId = req.userId; // From Clerk middleware
     
-    const config = await Configuration.findById(id);
+    const config = await Configuration.findByIdAndUser(id, userId);
     
     if (!config) {
-      return res.status(404).json({ error: 'Configuration not found' });
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Configuration not found or access denied' 
+      });
     }
     
     res.json({
@@ -98,12 +108,14 @@ const getConfig = async (req, res, next) => {
   }
 };
 
-// Get all configurations
+// Get all configurations for authenticated user
 const getAllConfigs = async (req, res, next) => {
   try {
     const { limit = 50, offset = 0 } = req.query;
+    const userId = req.userId; // From Clerk middleware
     
-    const configs = await Configuration.findAll(
+    const configs = await Configuration.findAllByUser(
+      userId,
       parseInt(limit), 
       parseInt(offset)
     );

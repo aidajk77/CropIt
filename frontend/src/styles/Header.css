@@ -1,0 +1,33 @@
+.header {
+  width: 100%;
+  padding: 1rem;
+  background-color: #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.header-title {
+  margin: 0;
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+}
+
+.header-link {
+  text-decoration: none;
+  color: inherit;
+  margin-right: 1rem;
+}
+
+.header-link:last-child {
+  margin-right: 0;
+}
+
+.header-link:hover {
+  text-decoration: underline;
+}

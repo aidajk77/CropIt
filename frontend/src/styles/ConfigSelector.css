@@ -1,0 +1,70 @@
+.selector-container {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.selector-title {
+  margin-top: 0;
+}
+
+.selector-loading {
+  margin: 0;
+}
+
+.selector-error {
+  color: red;
+  margin-bottom: 1rem;
+}
+
+.selector-no-configs {
+  padding: 1rem;
+  background-color: #fff3cd;
+  border-radius: 4px;
+  color: #856404;
+}
+
+.selector-form-group {
+  margin-bottom: 1rem;
+}
+
+.selector-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+.selector-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.selector-selected-info {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: #e7f3ff;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.selector-refresh-button {
+  margin-top: 1rem;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+}
+
+.selector-refresh-button:enabled {
+  cursor: pointer;
+}
+
+.selector-refresh-button:disabled {
+  cursor: not-allowed;
+}

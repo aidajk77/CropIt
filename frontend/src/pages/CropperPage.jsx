@@ -3,6 +3,7 @@ import ImageEditor from "../components/ImageEditor.jsx";
 import PreviewArea from "../components/PreviewArea.jsx";
 import GenerateButton from "../components/GenerateButton.jsx";
 import ConfigSelector from "../components/ConfigSelector.jsx";
+import "../styles/CropperPage.css";
 
 const CropperPage = () => {
   const [imageData, setImageData] = useState({
@@ -25,7 +26,7 @@ const CropperPage = () => {
   };
 
   return (
-    <div style={{ padding: "2rem", maxWidth: "1200px", margin: "0 auto" }}>
+    <div className="cropper-container">
       
       <ImageEditor onImageAndCropReady={handleImageAndCropReady} />
       

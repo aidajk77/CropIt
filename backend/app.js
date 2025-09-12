@@ -2,17 +2,26 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
+//const { verifyClerkToken, extractUserId } = require('./middlewares/clerkAuth');
 
 const app = express();
 
 // Load environment variables
-dotenv.config({ path: 'config/config.env' });
+dotenv.config({ path: './config/config.env' });
+
+const { verifyClerkToken, extractUserId } = require('./middlewares/clerkAuth');
+
+
 
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+
+// Add Clerk authentication middleware to all API routes
+app.use('/api', verifyClerkToken);
+app.use('/api', extractUserId);
 
 // Routes
 const imageRoutes = require('./routes/imageRoutes');
