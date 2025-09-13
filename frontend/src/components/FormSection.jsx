@@ -114,7 +114,7 @@ const FormSection = ({
       {form.logoFile && (
         <div className="config-file-info">
           <p className="config-file-info-text">
-            ✅ {form.logoFile.name} ({(form.logoFile.size / 1024 / 1024).toFixed(2)} MB)
+             {form.logoFile.name} ({(form.logoFile.size / 1024 / 1024).toFixed(2)} MB)
           </p>
         </div>
       )}
@@ -127,13 +127,13 @@ const FormSection = ({
 
     {form.error && (
       <div className="config-error">
-        ❌ {form.error}
+         {form.error}
       </div>
     )}
 
     {form.success && (
       <div className="config-success">
-        ✅ {form.success}
+         {form.success}
       </div>
     )}
 

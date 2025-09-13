@@ -7,7 +7,14 @@ const Header = () => {
   return (
     <header className="header">
       <div className="header-left">
-        <h1 className="header-title">📸 Image Cropper</h1>
+        <Link to="/" className="header-logo-link">
+          <img 
+            src="./images/logo.png" 
+            alt="CropIt Logo" 
+            className="header-logo-image"
+          />
+          <span className="header-logo-text">CropIt</span>
+        </Link>
       </div>
       
       <nav className="header-nav">

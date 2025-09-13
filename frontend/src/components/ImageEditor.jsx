@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import UploadIcon from "./UploadIcon";
 import "../styles/ImageEditor.css";
 
 const ImageEditor = ({ onImageAndCropReady }) => {
@@ -215,7 +216,9 @@ const ImageEditor = ({ onImageAndCropReady }) => {
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
           >
-            <div className="editor-upload-icon">📁</div>
+            <div className="editor-upload-icon">
+              <UploadIcon width={64} height={64} />
+            </div>
             <p className="editor-upload-text">
               Drag & drop your PNG image here
             </p>
@@ -238,11 +241,11 @@ const ImageEditor = ({ onImageAndCropReady }) => {
           <div className="editor-image-controls">
             <div className="editor-image-info">
               <p className="editor-file-name">
-                ✅ {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                 {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
               </p>
               {cropArea && (
                 <p className="editor-crop-dimensions">
-                  📏 Selected: {Math.round(cropArea.width)} × {Math.round(cropArea.height)} px
+                   Selected: {Math.round(cropArea.width)} × {Math.round(cropArea.height)} px
                 </p>
               )}
             </div>
@@ -272,8 +275,8 @@ const ImageEditor = ({ onImageAndCropReady }) => {
 
           <p className={`editor-crop-status ${cropArea ? 'ready' : 'waiting'}`}>
             {cropArea ? 
-              "✅ Crop area selected! You can now generate preview or final image." : 
-              "📏 Click and drag on the image to select the crop area"
+              " Crop area selected! You can now generate preview or final image." : 
+              " Click and drag on the image to select the crop area"
             }
           </p>
           

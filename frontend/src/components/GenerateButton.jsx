@@ -46,7 +46,7 @@ const GenerateButton = ({ file, cropCoords, configId = null }) => {
       
     } catch (err) {
       console.error("Image generation failed:", err);
-      setError(`Failed to generate image: ${err.message}`);
+      setError(`Failed to generate image: Sign in to download your cropped image`);
     } finally {
       setLoading(false);
     }
@@ -103,7 +103,7 @@ const GenerateButton = ({ file, cropCoords, configId = null }) => {
       {/* Error display */}
       {error && (
         <div className="generate-error">
-          ❌ {error}
+          {error}
         </div>
       )}
 

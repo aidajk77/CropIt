@@ -1,7 +1,7 @@
 .header {
   width: 100%;
   padding: 1rem;
-  background-color: #f0f0f0;
+  background-color: #F8F9FA;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -20,7 +20,8 @@
 
 .header-link {
   text-decoration: none;
-  color: inherit;
+  font-weight: 600;
+  color: #336E6E;
   margin-right: 1rem;
 }
 
@@ -29,5 +30,36 @@
 }
 
 .header-link:hover {
-  text-decoration: underline;
+  color: #54E0E0;
+}
+
+.header-logo-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+}
+
+.header-logo-image {
+  height: 24px; /* Smaller size */
+  width: auto;
+  margin-right: 8px;
+}
+
+.header-logo-text {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #336E6E;
+  margin: 0;
+}
+
+.header-auth-button ,.header-login-button{
+  background-color: #336E6E;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration: none;
 }

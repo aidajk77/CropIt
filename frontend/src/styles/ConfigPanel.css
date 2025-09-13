@@ -1,6 +1,6 @@
 .config-container {
   max-width: 1200px;
-  margin: 0 auto;
+  margin: 24px auto;
 }
 
 .config-panels-wrapper {
@@ -13,12 +13,14 @@
   background-color: white;
   padding: 1.5rem;
   border-radius: 8px;
-  border: 1px solid #ddd;
+  border: 3px solid transparent;
+  border-image: linear-gradient(90deg, #336E6E, #54E0E0) 1;
   flex: 1;
 }
 
 .config-form-title {
   margin-top: 0;
+  color: #336E6E;
 }
 
 .config-form-group {
@@ -29,6 +31,7 @@
   display: block;
   margin-bottom: 0.5rem;
   font-weight: bold;
+  color: #336E6E;
 }
 
 .config-input {
@@ -46,19 +49,18 @@
 }
 
 .config-small-text {
-  color: #666;
+  color: #336E6E;
 }
 
 .config-file-info {
   margin-top: 0.5rem;
   padding: 0.5rem;
-  background-color: #f0f8ff;
   border-radius: 4px;
 }
 
 .config-file-info-text {
   margin: 0;
-  color: green;
+  color: #54E0E0;
   font-size: 0.9rem;
 }
 
@@ -73,14 +75,13 @@
 .config-error {
   color: red;
   padding: 0.75rem;
-  background-color: #ffebee;
   border-radius: 4px;
   margin-bottom: 1rem;
   font-size: 0.9rem;
 }
 
 .config-success {
-  color: green;
+  color: #336e6e;
   padding: 0.75rem;
   background-color: #e8f5e8;
   border-radius: 4px;
@@ -109,10 +110,21 @@
   border-radius: 4px;
   font-size: 0.9rem;
   flex: 1;
+  
 }
 
 .config-primary-button:enabled {
-  background-color: #007bff;
+  background-color: transparent;
+  color: #54E0E0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid #54E0E0;
+  border-radius: 8px;
+}
+
+.config-primary-button:enabled:hover {
+  background-color: #54E0E0;
+  color: white;
   cursor: pointer;
 }
 
@@ -122,11 +134,22 @@
 }
 
 .config-secondary-button {
-  background-color: #6c757d;
+  background-color: red;
   color: white;
-  border: none;
   padding: 10px 12px;
-  border-radius: 4px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  border: 2px solid red;
+}
+
+.config-secondary-button:hover {
+  background-color: transparent;
+  color: red;
+  border: 2px solid red;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 10px 12px;
+  border-radius: 8px;
   font-size: 0.9rem;
 }
 

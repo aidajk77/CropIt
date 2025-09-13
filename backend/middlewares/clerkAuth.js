@@ -10,7 +10,6 @@ const verifyClerkToken = async (req, res, next) => {
 
     const token = authHeader.split(' ')[1];
 
-    // Use Clerk's verifyToken function directly
     const payload = await verifyToken(token, {
       secretKey: process.env.CLERK_SECRET_KEY
     });
@@ -29,7 +28,6 @@ const verifyClerkToken = async (req, res, next) => {
 
 const extractUserId = (req, res, next) => {
   
-  // The user ID should be in the 'sub' field for JWT tokens
   const userId = req.auth?.sub;
   
   if (!userId) {

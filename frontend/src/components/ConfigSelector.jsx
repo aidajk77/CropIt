@@ -24,7 +24,7 @@ const ConfigSelector = ({ onConfigSelect, selectedConfigId }) => {
       const result = await getAllConfigs(token);
       setConfigs(result.data || result || []);
     } catch (err) {
-      setError('Error loading configurations: ' + err.message);
+      setError('Error loading configurations: Sign in to access your saved logo configurations');
     } finally {
       setLoading(false);
     }
@@ -84,14 +84,6 @@ const ConfigSelector = ({ onConfigSelect, selectedConfigId }) => {
               )}
             </div>
           )}
-          
-          <button
-            className="selector-refresh-button"
-            onClick={loadConfigs}
-            disabled={loading}
-          >
-            {loading ? "Refreshing..." : "Refresh Configs"}
-          </button>
         </>
       )}
     </div>

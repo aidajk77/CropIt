@@ -4,7 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 class Configuration {
   constructor(data) {
     this.id = data.id;
-    this.userId = data.user_id; // Add user ID
+    this.userId = data.user_id; 
     this.scaleDown = data.scale_down;
     this.logoPosition = data.logo_position;
     this.isActive = data.is_active;
@@ -28,7 +28,7 @@ class Configuration {
     
     const params = [
       id,
-      configData.userId, // Include user ID
+      configData.userId, 
       parseFloat(configData.scaleDown) || null,
       configData.logoPosition || 'bottom-right',
       configData.description || null,
@@ -45,7 +45,7 @@ class Configuration {
     }
   }
 
-  // Find configuration by ID (keeping original method for backward compatibility)
+  // Find configuration by ID 
   static async findById(id) {
     const db = createConnection();
     const query = 'SELECT * FROM configurations WHERE id = ? AND is_active = 1';
@@ -59,7 +59,7 @@ class Configuration {
     }
   }
 
-  // NEW: Find configuration by ID and user ID (user-specific)
+  // Find configuration by ID and user ID (user-specific)
   static async findByIdAndUser(id, userId) {
     const db = createConnection();
     const query = 'SELECT * FROM configurations WHERE id = ? AND user_id = ? AND is_active = 1';
@@ -203,14 +203,6 @@ class Configuration {
     if (updateData.logoMimeType !== undefined) {
       fields.push('logo_mime_type = ?');
       params.push(updateData.logoMimeType);
-    }
-    if (updateData.logoFileName !== undefined) {
-      fields.push('logo_file_name = ?');
-      params.push(updateData.logoFileName);
-    }
-    if (updateData.logoFileSize !== undefined) {
-      fields.push('logo_file_size = ?');
-      params.push(updateData.logoFileSize);
     }
     if (updateData.description !== undefined) {
       fields.push('description = ?');

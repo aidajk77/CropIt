@@ -127,7 +127,7 @@ const generatePreview = async (req, res, next) => {
     // Apply logo overlay at full size if configId is provided
     if (configId) {
       try {
-        // Use user-specific config lookup to ensure security
+        // Use user-specific config lookup
         const config = await Configuration.findByIdAndUser(configId, userId);
         if (!config) {
           return res.status(404).json({

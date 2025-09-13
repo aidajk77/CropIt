@@ -13,7 +13,7 @@ const createConfig = async (req, res, next) => {
     }
 
     const configData = {
-      userId: userId, // Add user ID to config data
+      userId: userId, 
       scaleDown: scaleDown ? parseFloat(scaleDown) : null,
       logoPosition: logoPosition || 'bottom-right',
       description,

@@ -37,7 +37,7 @@ const PreviewArea = ({ file, cropCoords, configId }) => {
       setPreviewUrl(imageUrl);
     } catch (err) {
       console.error("Preview generation failed:", err);
-      setError(`Failed to generate preview: ${err.message}`);
+      setError(`Failed to generate preview: Sign in to generate your cropped image`);
     } finally {
       setLoading(false);
     }
