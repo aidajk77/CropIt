@@ -4,10 +4,10 @@ const configController = require('../controllers/configController');
 const upload = require('../middlewares/uploadMiddleware');
 const { verifyClerkToken, extractUserId } = require('../middlewares/clerkAuth'); // Update path as needed
 
-
 // Apply authentication middleware to all routes
 router.use(verifyClerkToken);
 router.use(extractUserId);
+
 
 
 // POST /api/config - Create new configuration (protected)

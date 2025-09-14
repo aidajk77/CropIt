@@ -1,5 +1,5 @@
 const sharp = require('sharp');
-const Configuration = require('../models/Configuration');
+const Configuration = require('../models/configuration.js');
 
 // Helper function to process crop coordinates
 const processCropCoordinates = (coords) => {

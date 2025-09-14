@@ -1,4 +1,4 @@
-const Configuration = require('../models/Configuration');
+const Configuration = require('../models/configuration.js');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 

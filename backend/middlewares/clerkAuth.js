@@ -27,6 +27,7 @@ const verifyClerkToken = async (req, res, next) => {
 };
 
 const extractUserId = (req, res, next) => {
+
   
   const userId = req.auth?.sub;
   

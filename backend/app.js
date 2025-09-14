@@ -9,6 +9,7 @@ const app = express();
 // Load environment variables
 dotenv.config({ path: './config/config.env' });
 
+
 const { verifyClerkToken, extractUserId } = require('./middlewares/clerkAuth');
 
 
