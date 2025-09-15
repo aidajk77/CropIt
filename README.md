@@ -87,7 +87,7 @@ All endpoints require user authentication via Clerk JWT tokens.
    ```
 
 4. **Access the application**
-   - Frontend: http://localhost:8080
+   - Frontend: http://localhost:3000
    - Backend API: http://localhost:5000
 
 ## 🔧 Configuration Options
@@ -290,3 +290,4 @@ CREATE TABLE `configurations` (
 ## 📄 License
 
 This project is developed as part of a technical assessment for Kodecta.
+
